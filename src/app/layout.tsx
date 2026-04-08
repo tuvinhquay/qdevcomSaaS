@@ -1,9 +1,9 @@
-import type { Metadata, Viewport } from 'next'
+﻿import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Q-DevCom SaaS v2.0',
-  description: 'Q-DevCom SaaS v2.0 — Foundation ready',
+  description: 'Q-DevCom SaaS v2.0 â€” Foundation ready',
   applicationName: 'Q-DevCom SaaS v2.0',
   manifest: '/manifest.json',
   icons: {
@@ -39,13 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased dark">
       <body className="min-h-full bg-background text-foreground font-sans">
-        <div className="min-h-full flex flex-col">
-          <main className="flex-1">
-            <div className="mx-auto w-full max-w-6xl px-6 py-10">
-              {children}
-            </div>
-          </main>
-        </div>
+        {children}
       </body>
     </html>
   )
