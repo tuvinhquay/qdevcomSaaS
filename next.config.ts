@@ -18,11 +18,6 @@ const nextConfig: NextConfig = {
     workerThreads: true,
     cpus: 1,
   },
-  // In some constrained Windows environments, Next's build-time type checking can fail
-  // due to process spawn restrictions. Keep CI/typechecks separate from `next build`.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
 }
 
 export default withPWA(nextConfig)
