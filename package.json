@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "sync-assets": "node tools/sync-assets.mjs",
+    "check:env": "node tools/check-env.mjs",
+    "test:app": "npm run check:env && npm run build",
     "dev": "npm run sync-assets && next dev --webpack",
     "build": "npm run sync-assets && next build --webpack",
     "start": "next start",
