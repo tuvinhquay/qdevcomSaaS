@@ -30,10 +30,6 @@ export default function LoginPage() {
     return "Login failed. Please check your credentials and Firebase config.";
   };
 
-  const onLoginSuccess = () => {
-    router.push("/dashboard");
-  };
-
   const runLogin = async (runner: () => Promise<void>) => {
     if (!firebaseEnabled || !auth) {
       setErrorMessage(configError || "Firebase is not configured.");
@@ -44,7 +40,7 @@ export default function LoginPage() {
       setIsSubmitting(true);
       setErrorMessage("");
       await runner();
-      onLoginSuccess();
+      router.push("/dashboard");
     } catch (error) {
       setErrorMessage(parseError(error));
     } finally {
@@ -89,13 +85,7 @@ export default function LoginPage() {
     });
   };
 
-  const statusRows = [
-    "Login Google OK",
-    "Login email OK",
-    "Login anonymous OK",
-    "User mới → auto tạo tenant",
-    "Sau login → vào dashboard",
-  ];
+  const quickChecks = ["Login Google", "Login email", "Login anonymous"];
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -108,83 +98,53 @@ export default function LoginPage() {
         className="absolute inset-0 h-full w-full object-cover"
         src="/assets/videos/bieutuong1.mp4"
       />
-      <div className="absolute inset-0 bg-slate-950/55" />
+      <div className="absolute inset-0 bg-slate-950/56" />
 
-      <div className="relative z-10 mx-auto grid min-h-screen w-full max-w-6xl items-center gap-8 px-4 py-8 lg:grid-cols-2">
-        <section className="rounded-2xl border border-white/20 bg-slate-950/45 p-6 text-slate-100 backdrop-blur-md">
-          <div className="mb-6 flex items-center gap-4">
-            <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-slate-900/80 ring-1 ring-white/25">
-              <Image
-                src="/assets/images/appqdev.png"
-                alt="Q-DevCom logo"
-                fill
-                sizes="64px"
-                className="object-contain p-2"
-                priority
-              />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Q-DEVCOM V2</h1>
-              <p className="text-sm text-slate-300">AUTH + MULTI-TENANT SYSTEM</p>
-            </div>
-          </div>
-
-          <p className="mb-4 text-sm text-slate-200">
-            Sau khi chạy <code>npm run dev</code>, kiểm tra nhanh checklist bên dưới:
-          </p>
-
-          <ul className="space-y-2">
-            {statusRows.map((item) => (
-              <li
-                key={item}
-                className="rounded-lg border border-emerald-400/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200"
-              >
-                ✓ {item}
-              </li>
-            ))}
-          </ul>
-
-          <p className="mt-4 rounded-lg border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-100">
-            Ghi chú: tài khoản mới sẽ được tạo tenant tự động theo định danh user để
-            phục vụ test luồng multi-tenant.
-          </p>
-        </section>
-
-        <section className="rounded-2xl border border-white/25 bg-white/92 p-6 shadow-2xl">
-          <div className="mx-auto mb-6 flex w-full max-w-sm items-center justify-center">
-            <div className="relative h-20 w-20">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center px-4 py-8">
+        <section className="w-full max-w-md rounded-3xl border border-white/45 bg-white/18 p-6 text-white shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+          <div className="mb-5 flex items-center gap-4">
+            <div className="relative h-20 w-20 rounded-2xl border border-white/45 bg-white/28 p-2 shadow-[0_10px_24px_rgba(0,0,0,0.3)]">
               <Image
                 src="/assets/images/appqdev.png"
                 alt="Q-DevCom app logo"
                 fill
                 sizes="80px"
-                className="object-contain"
+                className="object-contain p-2"
                 priority
               />
             </div>
+
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-wide [text-shadow:0_1px_0_rgba(255,255,255,0.85),0_8px_20px_rgba(0,0,0,0.45)]">
+                Q-DEVCOM V2
+              </h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/85">
+                Auth Login Portal
+              </p>
+            </div>
           </div>
 
-          <label className="mb-2 block text-sm font-medium text-slate-700">Email</label>
+          <label className="mb-1.5 block text-sm font-semibold text-white/95">Email</label>
           <input
             value={email}
             placeholder="you@company.com"
-            className="mb-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-0 transition focus:border-slate-500"
+            className="mb-3 w-full rounded-xl border border-white/50 bg-white/24 px-3 py-2 text-slate-100 placeholder:text-white/70 outline-none transition focus:border-white/85"
             onChange={(event) => setEmail(event.target.value)}
           />
 
-          <label className="mb-2 block text-sm font-medium text-slate-700">Password</label>
+          <label className="mb-1.5 block text-sm font-semibold text-white/95">Password</label>
           <input
             value={password}
             type="password"
             placeholder="••••••••"
-            className="mb-4 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none ring-0 transition focus:border-slate-500"
+            className="mb-4 w-full rounded-xl border border-white/50 bg-white/24 px-3 py-2 text-slate-100 placeholder:text-white/70 outline-none transition focus:border-white/85"
             onChange={(event) => setPassword(event.target.value)}
           />
 
           <button
             onClick={loginEmail}
             disabled={!firebaseEnabled || isSubmitting}
-            className="mb-3 w-full rounded-lg bg-slate-950 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mb-2.5 w-full rounded-xl border border-white/65 bg-white/22 px-3 py-2 text-sm font-bold tracking-wide text-white [text-shadow:0_1px_0_rgba(255,255,255,0.85),0_6px_14px_rgba(0,0,0,0.45)] transition hover:bg-white/32 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Login with Email
           </button>
@@ -192,7 +152,7 @@ export default function LoginPage() {
           <button
             onClick={loginGoogle}
             disabled={!firebaseEnabled || isSubmitting}
-            className="mb-3 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mb-2.5 w-full rounded-xl border border-white/65 bg-white/22 px-3 py-2 text-sm font-bold tracking-wide text-white [text-shadow:0_1px_0_rgba(255,255,255,0.85),0_6px_14px_rgba(0,0,0,0.45)] transition hover:bg-white/32 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Login with Google
           </button>
@@ -200,13 +160,28 @@ export default function LoginPage() {
           <button
             onClick={loginAnonymous}
             disabled={!firebaseEnabled || isSubmitting}
-            className="w-full rounded-lg border border-slate-400 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl border border-white/65 bg-white/22 px-3 py-2 text-sm font-bold tracking-wide text-white [text-shadow:0_1px_0_rgba(255,255,255,0.85),0_6px_14px_rgba(0,0,0,0.45)] transition hover:bg-white/32 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Login Anonymous
           </button>
 
+          <div className="mt-5 space-y-1.5 rounded-2xl border border-white/40 bg-white/12 p-3">
+            {quickChecks.map((item) => (
+              <p
+                key={item}
+                className="text-sm font-semibold text-white [text-shadow:0_1px_0_rgba(255,255,255,0.82),0_8px_16px_rgba(0,0,0,0.5)]"
+              >
+                - {item}
+              </p>
+            ))}
+            <p className="mt-2 rounded-xl border border-amber-200/60 bg-amber-100/20 px-2 py-1.5 text-xs font-semibold text-amber-50 [text-shadow:0_1px_0_rgba(255,255,255,0.7),0_6px_12px_rgba(0,0,0,0.45)]">
+              CẢNH BÁO: phần đăng nhập nhanh không có lưu trữ dữ liệu thật. Mục đích
+              chỉ để tham quan giao diện app.
+            </p>
+          </div>
+
           {(errorMessage || configError) && (
-            <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p className="mt-4 rounded-xl border border-red-200/70 bg-red-500/20 px-3 py-2 text-sm text-red-100">
               {errorMessage || configError}
             </p>
           )}
