@@ -21,6 +21,10 @@
 /public/sw.js
 /public/workbox-*.js
 
+# synced assets (generated at build time by tools/sync-assets.mjs)
+/public/assets/**
+!/public/assets/**/.gitkeep
+
 # production
 /build
 
