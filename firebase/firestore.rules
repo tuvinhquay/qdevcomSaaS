@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDocPath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+
+    function hasUserProfile() {
+      return isSignedIn() && exists(userDocPath());
+    }
+
+    function userData() {
+      return get(userDocPath()).data;
+    }
+
+    function currentCompanyId() {
+      return hasUserProfile() ? userData().companyId : null;
+    }
+
+    function currentRole() {
+      return hasUserProfile() ? userData().role : null;
+    }
+
+    function isCompanyMember(companyId) {
+      return isSignedIn() && hasUserProfile() && currentCompanyId() == companyId;
+    }
+
+    function isOwnerOrAdmin() {
+      return currentRole() in ['owner', 'admin'];
+    }
+
+    function isCompanyOwner(companyId) {
+      return isSignedIn() &&
+        exists(/databases/$(database)/documents/companies/$(companyId)) &&
+        get(/databases/$(database)/documents/companies/$(companyId)).data.ownerId == request.auth.uid;
+    }
+
+    function moduleEnabled(companyId, moduleFlag) {
+      return exists(/databases/$(database)/documents/companies/$(companyId)/modules/core) &&
+        get(/databases/$(database)/documents/companies/$(companyId)/modules/core).data[moduleFlag] == true;
+    }
+
+    function canAccessModule(companyId, moduleFlag) {
+      return isCompanyMember(companyId) && (
+        isOwnerOrAdmin() ||
+        ((currentRole() == 'manager' || currentRole() == 'staff') && moduleEnabled(companyId, moduleFlag))
+      );
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (
+        request.auth.uid == userId ||
+        (isOwnerOrAdmin() && resource.data.companyId == currentCompanyId())
+      );
+
+      allow create: if isSignedIn() && request.auth.uid == userId;
+
+      allow update: if isSignedIn() && (
+        request.auth.uid == userId ||
+        (
+          isOwnerOrAdmin() &&
+          resource.data.companyId == currentCompanyId() &&
+          request.resource.data.companyId == currentCompanyId()
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    match /companies/{companyId} {
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow read: if isCompanyMember(companyId) || isCompanyOwner(companyId);
+      allow update, delete: if (isCompanyMember(companyId) && isOwnerOrAdmin()) || isCompanyOwner(companyId);
+
+      match /members/{memberId} {
+        allow read: if isCompanyMember(companyId) || isCompanyOwner(companyId);
+        allow create, update, delete: if (isCompanyMember(companyId) && isOwnerOrAdmin()) || isCompanyOwner(companyId);
+      }
+
+      match /modules/{moduleId} {
+        allow read: if isCompanyMember(companyId) || isCompanyOwner(companyId);
+        allow write: if (isCompanyMember(companyId) && isOwnerOrAdmin()) || isCompanyOwner(companyId);
+      }
+
+      match /workOrders/{docId} {
+        allow read, write: if canAccessModule(companyId, 'productionEnabled');
+      }
+
+      match /productionOrders/{docId} {
+        allow read, write: if canAccessModule(companyId, 'productionEnabled');
+      }
+
+      match /inventory/{docId} {
+        allow read, write: if canAccessModule(companyId, 'warehouseEnabled');
+      }
+
+      match /chats/{docId} {
+        allow read, write: if canAccessModule(companyId, 'chatEnabled');
+      }
+    }
+  }
+}

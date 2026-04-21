@@ -1,5 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? "",
@@ -17,6 +18,7 @@ let firebaseInitError: string | null = null;
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let googleProvider: GoogleAuthProvider | null = null;
+let db: Firestore | null = null;
 
 if (!hasAllFirebaseEnv) {
   firebaseInitError =
@@ -28,6 +30,7 @@ if (!hasAllFirebaseEnv) {
   try {
     app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
     auth = getAuth(app);
+    db = getFirestore(app);
     googleProvider = new GoogleAuthProvider();
   } catch (error) {
     firebaseInitError =
@@ -36,4 +39,4 @@ if (!hasAllFirebaseEnv) {
 }
 
 export const firebaseEnabled = auth !== null && googleProvider !== null;
-export { app, auth, googleProvider, firebaseInitError };
+export { app, auth, db, googleProvider, firebaseInitError };
