@@ -26,17 +26,31 @@ service cloud.firestore {
     }
 
     function isCompanyMember(companyId) {
-      return isSignedIn() && hasUserProfile() && currentCompanyId() == companyId;
+      return hasUserProfile() && currentCompanyId() == companyId;
+    }
+
+    function isOwner() {
+      return currentRole() == 'owner';
+    }
+
+    function isAdmin() {
+      return currentRole() == 'admin';
+    }
+
+    function isManager() {
+      return currentRole() == 'manager';
+    }
+
+    function isStaff() {
+      return currentRole() == 'staff';
+    }
+
+    function isGuest() {
+      return currentRole() == 'guest';
     }
 
     function isOwnerOrAdmin() {
-      return currentRole() in ['owner', 'admin'];
-    }
-
-    function isCompanyOwner(companyId) {
-      return isSignedIn() &&
-        exists(/databases/$(database)/documents/companies/$(companyId)) &&
-        get(/databases/$(database)/documents/companies/$(companyId)).data.ownerId == request.auth.uid;
+      return isOwner() || isAdmin();
     }
 
     function moduleEnabled(companyId, moduleFlag) {
@@ -44,11 +58,28 @@ service cloud.firestore {
         get(/databases/$(database)/documents/companies/$(companyId)/modules/core).data[moduleFlag] == true;
     }
 
-    function canAccessModule(companyId, moduleFlag) {
-      return isCompanyMember(companyId) && (
-        isOwnerOrAdmin() ||
-        ((currentRole() == 'manager' || currentRole() == 'staff') && moduleEnabled(companyId, moduleFlag))
-      );
+    function canReadChats(companyId) {
+      return isCompanyMember(companyId) && moduleEnabled(companyId, 'chatEnabled');
+    }
+
+    function canWriteChats(companyId) {
+      return canReadChats(companyId) && !isGuest();
+    }
+
+    function canReadProduction(companyId) {
+      return isCompanyMember(companyId) && moduleEnabled(companyId, 'productionEnabled');
+    }
+
+    function canWriteProduction(companyId) {
+      return canReadProduction(companyId) && (isOwnerOrAdmin() || isManager());
+    }
+
+    function canReadWarehouse(companyId) {
+      return isCompanyMember(companyId) && moduleEnabled(companyId, 'warehouseEnabled');
+    }
+
+    function canWriteWarehouse(companyId) {
+      return canReadWarehouse(companyId) && (isOwnerOrAdmin() || isStaff());
     }
 
     match /users/{userId} {
@@ -73,33 +104,37 @@ service cloud.firestore {
 
     match /companies/{companyId} {
       allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
-      allow read: if isCompanyMember(companyId) || isCompanyOwner(companyId);
-      allow update, delete: if (isCompanyMember(companyId) && isOwnerOrAdmin()) || isCompanyOwner(companyId);
+      allow read: if isCompanyMember(companyId);
+      allow update, delete: if isCompanyMember(companyId) && isOwnerOrAdmin();
 
       match /members/{memberId} {
-        allow read: if isCompanyMember(companyId) || isCompanyOwner(companyId);
-        allow create, update, delete: if (isCompanyMember(companyId) && isOwnerOrAdmin()) || isCompanyOwner(companyId);
+        allow read: if isCompanyMember(companyId);
+        allow create, update, delete: if isCompanyMember(companyId) && isOwnerOrAdmin();
       }
 
       match /modules/{moduleId} {
-        allow read: if isCompanyMember(companyId) || isCompanyOwner(companyId);
-        allow write: if (isCompanyMember(companyId) && isOwnerOrAdmin()) || isCompanyOwner(companyId);
+        allow read: if isCompanyMember(companyId);
+        allow write: if isCompanyMember(companyId) && isOwnerOrAdmin();
       }
 
       match /workOrders/{docId} {
-        allow read, write: if canAccessModule(companyId, 'productionEnabled');
+        allow read: if canReadProduction(companyId);
+        allow write: if canWriteProduction(companyId);
       }
 
       match /productionOrders/{docId} {
-        allow read, write: if canAccessModule(companyId, 'productionEnabled');
+        allow read: if canReadProduction(companyId);
+        allow write: if canWriteProduction(companyId);
       }
 
       match /inventory/{docId} {
-        allow read, write: if canAccessModule(companyId, 'warehouseEnabled');
+        allow read: if canReadWarehouse(companyId);
+        allow write: if canWriteWarehouse(companyId);
       }
 
       match /chats/{docId} {
-        allow read, write: if canAccessModule(companyId, 'chatEnabled');
+        allow read: if canReadChats(companyId);
+        allow write: if canWriteChats(companyId);
       }
     }
   }

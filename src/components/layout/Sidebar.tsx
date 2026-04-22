@@ -1,8 +1,9 @@
-﻿'use client'
+'use client'
 
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { ComponentType } from 'react'
 import {
   ArchiveBoxIcon,
   ChatBubbleLeftRightIcon,
@@ -11,18 +12,32 @@ import {
   HomeIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
+import { useAuth } from '@/core/auth/AuthProvider'
+import { type UserRole } from '@/core/firestore/firestoreClient'
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', Icon: HomeIcon },
-  { href: '/chat', label: 'Chat', Icon: ChatBubbleLeftRightIcon },
-  { href: '/work-orders', label: 'Work Orders', Icon: ClipboardDocumentListIcon },
-  { href: '/production', label: 'Production', Icon: WrenchScrewdriverIcon },
-  { href: '/warehouse', label: 'Warehouse', Icon: ArchiveBoxIcon },
-  { href: '/settings', label: 'Settings', Icon: Cog6ToothIcon },
+type NavItem = {
+  href: string
+  label: string
+  Icon: ComponentType<{ className?: string }>
+  allowedRoles: UserRole[]
+}
+
+const navItems: NavItem[] = [
+  { href: '/dashboard', label: 'Dashboard', Icon: HomeIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
+  { href: '/chat', label: 'Chat', Icon: ChatBubbleLeftRightIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
+  { href: '/work-orders', label: 'Work Orders', Icon: ClipboardDocumentListIcon, allowedRoles: ['owner', 'admin', 'manager'] },
+  { href: '/production', label: 'Production', Icon: WrenchScrewdriverIcon, allowedRoles: ['owner', 'admin', 'manager'] },
+  { href: '/warehouse', label: 'Warehouse', Icon: ArchiveBoxIcon, allowedRoles: ['owner', 'admin', 'staff'] },
+  { href: '/settings', label: 'Settings', Icon: Cog6ToothIcon, allowedRoles: ['owner', 'admin'] },
 ]
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const { currentUserRole } = useAuth()
+
+  const visibleNavItems = currentUserRole
+    ? navItems.filter((item) => item.allowedRoles.includes(currentUserRole))
+    : []
 
   return (
     <div className="flex h-full flex-col px-4 py-5">
@@ -48,10 +63,8 @@ export default function Sidebar() {
 
       <nav className="mt-5 flex-1">
         <ul className="space-y-1">
-          {navItems.map(({ href, label, Icon }) => {
-            const isActive =
-              pathname === href ||
-              (href !== '/' && pathname?.startsWith(`${href}/`))
+          {visibleNavItems.map(({ href, label, Icon }) => {
+            const isActive = pathname === href || (href !== '/' && pathname?.startsWith(`${href}/`))
 
             return (
               <li key={href}>
@@ -75,7 +88,7 @@ export default function Sidebar() {
 
       <div className="mt-4 rounded-lg border border-white/15 bg-slate-950/30 px-3 py-3 text-xs text-slate-300">
         <div className="font-medium text-slate-300">Quick tip</div>
-        <div className="mt-1">Assets auto-sync từ `src/assets` → `public/assets`.</div>
+        <div className="mt-1">Assets auto-sync t? `src/assets` ? `public/assets`.</div>
       </div>
     </div>
   )

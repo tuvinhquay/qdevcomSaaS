@@ -1,15 +1,19 @@
 "use client";
 
-import { auth, db } from "@/services/firebase";
+import { db } from "@/services/firebase";
 import {
   collection,
   doc,
-  getDoc,
   getDocs,
+  serverTimestamp,
   setDoc,
-  updateDoc,
 } from "firebase/firestore";
-import { getCurrentCompanyId, type UserRole } from "@/core/firestore/firestoreClient";
+import {
+  assertPermission,
+  getCurrentCompanyId,
+  type UserRole,
+} from "@/core/firestore/firestoreClient";
+import { setUserRole } from "@/core/firestore/roles";
 
 export type CompanyMember = {
   userId: string;
@@ -42,6 +46,7 @@ async function resolveCompanyIdOrThrow(companyId?: string): Promise<string> {
 export async function getCompanyMembers(companyId?: string): Promise<CompanyMember[]> {
   assertFirestoreReady();
   const resolvedCompanyId = await resolveCompanyIdOrThrow(companyId);
+  await assertPermission("manage_users", resolvedCompanyId);
 
   const membersRef = collection(db!, "companies", resolvedCompanyId, "members");
   const membersSnap = await getDocs(membersRef);
@@ -61,6 +66,7 @@ export async function getCompanyMembers(companyId?: string): Promise<CompanyMemb
 export async function addMember(input: AddMemberInput, companyId?: string): Promise<void> {
   assertFirestoreReady();
   const resolvedCompanyId = await resolveCompanyIdOrThrow(companyId);
+  await assertPermission("manage_users", resolvedCompanyId);
 
   const memberRef = doc(db!, "companies", resolvedCompanyId, "members", input.userId);
   const userRef = doc(db!, "users", input.userId);
@@ -75,46 +81,20 @@ export async function addMember(input: AddMemberInput, companyId?: string): Prom
     { merge: true },
   );
 
-  const existingUserSnap = await getDoc(userRef);
-  if (existingUserSnap.exists()) {
-    await updateDoc(userRef, {
+  await setDoc(
+    userRef,
+    {
       companyId: resolvedCompanyId,
       role: input.role,
       email: input.email,
       displayName: input.displayName,
-    });
-    return;
-  }
-
-  await setDoc(userRef, {
-    companyId: resolvedCompanyId,
-    role: input.role,
-    email: input.email,
-    displayName: input.displayName,
-  });
+      createdAt: serverTimestamp(),
+    },
+    { merge: true },
+  );
 }
 
 export async function updateUserRole(userId: string, role: UserRole, companyId?: string): Promise<void> {
-  assertFirestoreReady();
   const resolvedCompanyId = await resolveCompanyIdOrThrow(companyId);
-
-  const memberRef = doc(db!, "companies", resolvedCompanyId, "members", userId);
-  const userRef = doc(db!, "users", userId);
-
-  await updateDoc(memberRef, { role });
-
-  const currentUid = auth?.currentUser?.uid;
-  if (!currentUid) {
-    return;
-  }
-
-  const userSnap = await getDoc(userRef);
-  if (!userSnap.exists()) {
-    return;
-  }
-
-  const currentCompanyId = userSnap.data().companyId as string | undefined;
-  if (currentCompanyId === resolvedCompanyId) {
-    await updateDoc(userRef, { role });
-  }
+  await setUserRole(resolvedCompanyId, userId, role);
 }
