@@ -1,8 +1,23 @@
-﻿export default function ProductionPage() {
+"use client";
+
+import ModuleStatusPanel from "@/components/ui/ModuleStatusPanel";
+
+export default function ProductionPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Production</h1>
-      <p className="mt-1 text-sm text-slate-400">Coming soon.</p>
-    </div>
-  )
+    <ModuleStatusPanel
+      title="Production"
+      description="Production area is prepared with permission boundaries for manager-level operations."
+      requiredPermission="access_production"
+      readyItems={[
+        "Owner/Admin/Manager role gates are active",
+        "Data layer permission check pattern is ready",
+        "Security rules already isolate data by tenant",
+      ]}
+      nextItems={[
+        "Production order CRUD screen",
+        "Stage workflow and status transitions",
+        "Assignment and schedule view",
+      ]}
+    />
+  );
 }

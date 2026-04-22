@@ -1,8 +1,23 @@
-﻿export default function WarehousePage() {
+"use client";
+
+import ModuleStatusPanel from "@/components/ui/ModuleStatusPanel";
+
+export default function WarehousePage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Warehouse</h1>
-      <p className="mt-1 text-sm text-slate-400">Coming soon.</p>
-    </div>
-  )
+    <ModuleStatusPanel
+      title="Warehouse"
+      description="Warehouse module now reflects role and tenant readiness instead of placeholder UI."
+      requiredPermission="access_warehouse"
+      readyItems={[
+        "Owner/Admin/Staff visibility is controlled",
+        "Tenant scope is enforced in security rules",
+        "Sidebar visibility follows role mapping",
+      ]}
+      nextItems={[
+        "Inventory item CRUD",
+        "Stock in/out transaction logs",
+        "Low-stock alert and dashboard cards",
+      ]}
+    />
+  );
 }

@@ -1,8 +1,23 @@
-﻿export default function ChatPage() {
+"use client";
+
+import ModuleStatusPanel from "@/components/ui/ModuleStatusPanel";
+
+export default function ChatPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Chat</h1>
-      <p className="mt-1 text-sm text-slate-400">Coming soon.</p>
-    </div>
-  )
+    <ModuleStatusPanel
+      title="Chat"
+      description="Tenant-aware chat module foundation is connected to role system."
+      requiredPermission="access_chat"
+      readyItems={[
+        "Role-aware dashboard access is active",
+        "Tenant context is available from AuthProvider",
+        "Firestore multi-tenant rules are deployed",
+      ]}
+      nextItems={[
+        "Real conversation threads and message list",
+        "Realtime sync with Firestore listeners",
+        "Role-based moderation actions",
+      ]}
+    />
+  );
 }
