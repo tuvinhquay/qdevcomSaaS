@@ -4,6 +4,7 @@ import { auth, db } from "@/services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export const COMPANY_STORAGE_KEY = "qdevcom.companyId.v1";
+export const ROLE_STORAGE_KEY = "qdevcom.currentRole.v1";
 
 export type UserRole = "owner" | "admin" | "manager" | "staff" | "guest";
 
@@ -59,6 +60,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   staff: [
     "access_dashboard",
     "access_chat",
+    "access_workorders",
     "access_warehouse",
     "read_only_modules",
   ],
@@ -108,6 +110,13 @@ export async function getCurrentCompanyId(): Promise<string | null> {
 }
 
 export async function getCurrentUserRole(companyId?: string): Promise<UserRole | null> {
+  if (typeof window !== "undefined") {
+    const localRole = window.localStorage.getItem(ROLE_STORAGE_KEY) as UserRole | null;
+    if (localRole) {
+      return localRole;
+    }
+  }
+
   const uid = getAuthenticatedUid();
   if (!uid || !db) {
     return null;
@@ -121,7 +130,11 @@ export async function getCurrentUserRole(companyId?: string): Promise<UserRole |
   const memberRef = doc(db, "companies", resolvedCompanyId, "members", uid);
   const memberSnap = await getDoc(memberRef);
   if (memberSnap.exists()) {
-    return (memberSnap.data().role as UserRole | undefined) ?? null;
+    const role = (memberSnap.data().role as UserRole | undefined) ?? null;
+    if (role && typeof window !== "undefined") {
+      window.localStorage.setItem(ROLE_STORAGE_KEY, role);
+    }
+    return role;
   }
 
   const userRef = doc(db, "users", uid);
@@ -135,7 +148,11 @@ export async function getCurrentUserRole(companyId?: string): Promise<UserRole |
     return null;
   }
 
-  return (userSnap.data().role as UserRole | undefined) ?? null;
+  const role = (userSnap.data().role as UserRole | undefined) ?? null;
+  if (role && typeof window !== "undefined") {
+    window.localStorage.setItem(ROLE_STORAGE_KEY, role);
+  }
+  return role;
 }
 
 export async function hasCurrentUserPermission(

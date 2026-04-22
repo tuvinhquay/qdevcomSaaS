@@ -5,7 +5,7 @@ import { auth, firebaseEnabled } from "@/services/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
 import { bootstrapTenant } from "@/core/bootstrap/bootstrapTenant";
 import { getUserRole } from "@/core/firestore/roles";
-import { type UserRole } from "@/core/firestore/firestoreClient";
+import { ROLE_STORAGE_KEY, type UserRole } from "@/core/firestore/firestoreClient";
 
 type AuthContextType = {
   user: User | null;
@@ -44,6 +44,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!authUser) {
         setTenantId(null);
         setCurrentUserRole(null);
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(ROLE_STORAGE_KEY);
+        }
         setLoading(false);
         return;
       }
@@ -56,10 +59,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setTenantId(bootstrapResult.companyId);
         setCurrentUserRole(role);
+        if (role && typeof window !== "undefined") {
+          window.localStorage.setItem(ROLE_STORAGE_KEY, role);
+        }
       } catch (error) {
         console.error("Tenant bootstrap failed", error);
         setTenantId(null);
         setCurrentUserRole(null);
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(ROLE_STORAGE_KEY);
+        }
       }
 
       setLoading(false);

@@ -118,8 +118,12 @@ service cloud.firestore {
       }
 
       match /workOrders/{docId} {
-        allow read: if canReadProduction(companyId);
-        allow write: if canWriteProduction(companyId);
+        allow read: if isSignedIn() && isCompanyMember(companyId) &&
+          currentRole() in ['owner', 'admin', 'manager', 'staff'];
+        allow create, update: if isSignedIn() && isCompanyMember(companyId) &&
+          currentRole() in ['owner', 'admin', 'manager'];
+        allow delete: if isSignedIn() && isCompanyMember(companyId) &&
+          currentRole() in ['owner', 'admin'];
       }
 
       match /productionOrders/{docId} {
