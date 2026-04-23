@@ -60,6 +60,10 @@ service cloud.firestore {
       return isOwner() || isAdmin();
     }
 
+    function hasRole(companyId, roles) {
+      return isCompanyMember(companyId) && currentRole() in roles;
+    }
+
     function moduleEnabled(companyId, moduleFlag) {
       return exists(/databases/$(database)/documents/companies/$(companyId)/modules/core) &&
         get(/databases/$(database)/documents/companies/$(companyId)/modules/core).data[moduleFlag] == true;
@@ -143,8 +147,10 @@ service cloud.firestore {
       }
 
       match /productionOrders/{docId} {
-        allow read: if canReadProduction(companyId);
-        allow write: if canWriteProduction(companyId);
+        allow read: if isCompanyMember(companyId);
+        allow create: if hasRole(companyId, ['owner', 'admin', 'manager']);
+        allow update: if hasRole(companyId, ['owner', 'admin', 'manager']);
+        allow delete: if hasRole(companyId, ['owner', 'admin']);
       }
 
       match /inventory/{docId} {
