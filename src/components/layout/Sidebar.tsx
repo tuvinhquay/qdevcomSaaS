@@ -24,7 +24,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', Icon: HomeIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
-  { href: '/chat', label: 'Chat', Icon: ChatBubbleLeftRightIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
+  { href: '/chat', label: 'Chat', Icon: ChatBubbleLeftRightIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
   { href: '/work-orders', label: 'Work Orders', Icon: ClipboardDocumentListIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
   { href: '/production', label: 'Production', Icon: WrenchScrewdriverIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
   { href: '/warehouse', label: 'Warehouse', Icon: ArchiveBoxIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },

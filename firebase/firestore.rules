@@ -159,6 +159,13 @@ service cloud.firestore {
         allow delete: if hasRole(companyId, ['owner', 'admin']);
       }
 
+      match /chat/{messageId} {
+        allow read, create: if isCompanyMember(companyId);
+        allow update, delete: if
+          hasRole(companyId, ['owner', 'admin', 'manager']) ||
+          (request.auth != null && request.auth.uid == resource.data.senderId);
+      }
+
       match /inventory/{docId} {
         allow read: if canReadWarehouse(companyId);
         allow write: if canWriteWarehouse(companyId);
