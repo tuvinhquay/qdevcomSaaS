@@ -153,6 +153,12 @@ service cloud.firestore {
         allow delete: if hasRole(companyId, ['owner', 'admin']);
       }
 
+      match /warehouse/{itemId} {
+        allow read: if isCompanyMember(companyId);
+        allow create, update: if hasRole(companyId, ['owner', 'admin', 'manager']);
+        allow delete: if hasRole(companyId, ['owner', 'admin']);
+      }
+
       match /inventory/{docId} {
         allow read: if canReadWarehouse(companyId);
         allow write: if canWriteWarehouse(companyId);
