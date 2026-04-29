@@ -79,47 +79,26 @@ function buildAdviceFallback(analysisData: AnalysisData, warnings: string[]): st
 }
 
 async function askGeminiForAdvice(analysisData: AnalysisData): Promise<string> {
-  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-  if (!apiKey) {
-    return "Gemini API key chua cau hinh (NEXT_PUBLIC_GEMINI_API_KEY).";
-  }
-
   const prompt = [
     "You are factory manager AI.",
     "Give short improvement advice based on:",
     JSON.stringify(analysisData, null, 2),
   ].join("\n\n");
 
-  const endpoint =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-  const response = await fetch(endpoint, {
+  const response = await fetch("/api/gemini", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [{ text: prompt }],
-        },
-      ],
-    }),
+    body: JSON.stringify({ prompt }),
   });
 
   if (!response.ok) {
     throw new Error(`Gemini request failed with status ${response.status}.`);
   }
 
-  const data = (await response.json()) as {
-    candidates?: Array<{
-      content?: {
-        parts?: Array<{ text?: string }>;
-      };
-    }>;
-  };
-
-  const text = data.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n").trim();
+  const data = (await response.json()) as { text?: string };
+  const text = data.text?.trim() ?? "";
   if (!text) {
     throw new Error("Gemini returned empty content.");
   }

@@ -21,6 +21,7 @@ import {
   getCurrentUserRole,
   type UserRole,
 } from "@/core/firestore/firestoreClient";
+import { handleAIMessage } from "@/core/ai/aiService";
 import { type ChatMessage } from "@/types/chat";
 
 const READ_SEND_ROLES: UserRole[] = ["owner", "admin", "manager", "staff"];
@@ -148,6 +149,41 @@ export async function sendMessage(data: ChatMessage): Promise<string> {
     updatedAt: now,
     channel: data.channel?.trim() || null,
   });
+
+  const isQCommand = content.toLowerCase().startsWith("@q");
+  if (isQCommand) {
+    const botTimestamp = Date.now();
+
+    try {
+      const aiReply = await handleAIMessage(content);
+      await addDoc(collectionRef, {
+        companyId,
+        senderId: "q-assistant",
+        senderName: "Q Assistant",
+        senderAvatar: "/assets/images/appqdev.png",
+        content: aiReply,
+        createdAt: botTimestamp,
+        updatedAt: botTimestamp,
+        channel: data.channel?.trim() || null,
+      });
+    } catch (error) {
+      const fallback =
+        error instanceof Error
+          ? error.message
+          : "Khong the xu ly @q o thoi diem hien tai.";
+
+      await addDoc(collectionRef, {
+        companyId,
+        senderId: "q-assistant",
+        senderName: "Q Assistant",
+        senderAvatar: "/assets/images/appqdev.png",
+        content: `@q gap su co: ${fallback}`,
+        createdAt: botTimestamp,
+        updatedAt: botTimestamp,
+        channel: data.channel?.trim() || null,
+      });
+    }
+  }
 
   return created.id;
 }
