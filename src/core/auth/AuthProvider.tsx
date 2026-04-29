@@ -11,6 +11,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   tenantId: string | null;
+  currentCompanyId: string | null;
   currentUserRole: UserRole | null;
   isOwner: boolean;
   isAdmin: boolean;
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   tenantId: null,
+  currentCompanyId: null,
   currentUserRole: null,
   isOwner: false,
   isAdmin: false,
@@ -82,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       loading,
       tenantId,
+      currentCompanyId: tenantId,
       currentUserRole,
       isOwner: currentUserRole === "owner",
       isAdmin: currentUserRole === "admin",
