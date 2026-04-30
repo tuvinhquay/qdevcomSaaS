@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation'
 import type { ComponentType } from 'react'
 import {
   ArchiveBoxIcon,
+  BookOpenIcon,
   ChatBubbleLeftRightIcon,
   ClipboardDocumentListIcon,
   Cog6ToothIcon,
   HomeIcon,
+  InformationCircleIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/core/auth/AuthProvider'
@@ -24,10 +26,12 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', Icon: HomeIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
-  { href: '/chat', label: 'Chat', Icon: ChatBubbleLeftRightIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
+  { href: '/chat', label: 'Chat', Icon: ChatBubbleLeftRightIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
   { href: '/work-orders', label: 'Work Orders', Icon: ClipboardDocumentListIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
-  { href: '/production', label: 'Production', Icon: WrenchScrewdriverIcon, allowedRoles: ['owner', 'admin', 'manager'] },
-  { href: '/warehouse', label: 'Warehouse', Icon: ArchiveBoxIcon, allowedRoles: ['owner', 'admin', 'staff'] },
+  { href: '/production', label: 'Production', Icon: WrenchScrewdriverIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
+  { href: '/warehouse', label: 'Warehouse', Icon: ArchiveBoxIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
+  { href: '/intro', label: 'Gioi thieu', Icon: InformationCircleIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
+  { href: '/guide', label: 'Huong dan', Icon: BookOpenIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
   { href: '/settings', label: 'Settings', Icon: Cog6ToothIcon, allowedRoles: ['owner', 'admin'] },
 ]
 
@@ -88,7 +92,7 @@ export default function Sidebar() {
 
       <div className="mt-4 rounded-lg border border-white/15 bg-slate-950/30 px-3 py-3 text-xs text-slate-300">
         <div className="font-medium text-slate-300">Quick tip</div>
-        <div className="mt-1">Assets auto-sync t? `src/assets` ? `public/assets`.</div>
+        <div className="mt-1">Assets auto-sync tu `src/assets` -&gt; `public/assets`.</div>
       </div>
     </div>
   )
