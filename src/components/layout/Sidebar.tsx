@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation'
 import type { ComponentType } from 'react'
 import {
   ArchiveBoxIcon,
+  BookOpenIcon,
   ChatBubbleLeftRightIcon,
   ClipboardDocumentListIcon,
   Cog6ToothIcon,
   HomeIcon,
+  InformationCircleIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/core/auth/AuthProvider'
@@ -28,6 +30,8 @@ const navItems: NavItem[] = [
   { href: '/work-orders', label: 'Work Orders', Icon: ClipboardDocumentListIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
   { href: '/production', label: 'Production', Icon: WrenchScrewdriverIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
   { href: '/warehouse', label: 'Warehouse', Icon: ArchiveBoxIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff'] },
+  { href: '/intro', label: 'Gioi thieu', Icon: InformationCircleIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
+  { href: '/guide', label: 'Huong dan', Icon: BookOpenIcon, allowedRoles: ['owner', 'admin', 'manager', 'staff', 'guest'] },
   { href: '/settings', label: 'Settings', Icon: Cog6ToothIcon, allowedRoles: ['owner', 'admin'] },
 ]
 
