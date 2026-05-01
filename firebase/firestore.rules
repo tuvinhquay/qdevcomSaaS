@@ -176,5 +176,80 @@ service cloud.firestore {
         allow write: if canWriteChats(companyId);
       }
     }
+
+    // Prompt 13 - advanced chat model scoped by tenant.
+    match /tenants/{tenantId} {
+      function isTenantMember() {
+        return isCompanyMember(tenantId);
+      }
+
+      function isTenantAdmin() {
+        return isTenantMember() && currentRole() in ['owner', 'admin'];
+      }
+
+      match /friend_requests/{requestId} {
+        allow read: if isTenantMember() &&
+          (resource.data.senderId == request.auth.uid || resource.data.receiverId == request.auth.uid || isTenantAdmin());
+        allow create: if isTenantMember() && request.resource.data.senderId == request.auth.uid;
+        allow update: if isTenantMember() &&
+          (
+            resource.data.receiverId == request.auth.uid ||
+            resource.data.senderId == request.auth.uid ||
+            isTenantAdmin()
+          );
+        allow delete: if false;
+      }
+
+      match /groups/{groupId} {
+        allow read: if isTenantMember() && (
+          request.auth.uid in resource.data.memberIds ||
+          isTenantAdmin()
+        );
+        allow create: if isTenantMember();
+        allow update: if isTenantMember() && (
+          request.auth.uid in resource.data.admins ||
+          resource.data.createdBy == request.auth.uid ||
+          isTenantAdmin()
+        );
+        allow delete: if isTenantAdmin() || resource.data.createdBy == request.auth.uid;
+
+        match /members/{memberId} {
+          allow read: if isTenantMember();
+          allow write: if isTenantMember() && (
+            isTenantAdmin() ||
+            request.auth.uid == memberId ||
+            request.auth.uid in get(/databases/$(database)/documents/tenants/$(tenantId)/groups/$(groupId)).data.admins
+          );
+        }
+      }
+
+      match /chats/{chatId} {
+        allow read: if isTenantMember() && (
+          request.auth.uid in resource.data.participants ||
+          isTenantAdmin()
+        );
+        allow create: if isTenantMember();
+        allow update: if isTenantMember() && (
+          request.auth.uid in resource.data.participants ||
+          isTenantAdmin()
+        );
+        allow delete: if false;
+
+        match /messages/{messageId} {
+          allow read: if isTenantMember() && (
+            request.auth.uid in get(/databases/$(database)/documents/tenants/$(tenantId)/chats/$(chatId)).data.participants ||
+            isTenantAdmin()
+          );
+          allow create: if isTenantMember() && (
+            request.auth.uid in get(/databases/$(database)/documents/tenants/$(tenantId)/chats/$(chatId)).data.participants ||
+            request.resource.data.senderId == 'q-assistant'
+          );
+          allow update, delete: if isTenantMember() && (
+            resource.data.senderId == request.auth.uid ||
+            isTenantAdmin()
+          );
+        }
+      }
+    }
   }
 }
