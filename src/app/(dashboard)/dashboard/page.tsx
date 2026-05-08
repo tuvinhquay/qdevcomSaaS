@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useAuth } from "@/core/auth/AuthProvider";
+import { useAutoRunIntelligence } from "@/intelligence/autoRunIntelligence";
+import { useProductionIntelligence } from "@/intelligence/useProductionIntelligence";
 
 const modules = [
   {
@@ -32,6 +34,15 @@ const modules = [
 
 export default function DashboardPage() {
   const { tenantId, currentUserRole } = useAuth();
+  useAutoRunIntelligence(tenantId);
+  const { loading, healthScore, bottlenecks, delayRisk } = useProductionIntelligence();
+
+  const healthStatusTone =
+    healthScore?.status === "good"
+      ? "text-emerald-300"
+      : healthScore?.status === "warning"
+        ? "text-amber-300"
+        : "text-rose-300";
 
   return (
     <div className="space-y-5">
@@ -50,6 +61,41 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-white/15 bg-slate-950/35 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-base font-semibold text-slate-100">Production Health</h2>
+            <span className={`text-xs font-semibold uppercase ${healthStatusTone}`}>
+              {healthScore?.status ?? "unknown"}
+            </span>
+          </div>
+
+          <p className="mt-3 text-4xl font-bold text-slate-100">
+            {loading ? "..." : Math.round(Number(healthScore?.score ?? 0))}
+          </p>
+          <p className="mt-1 text-xs text-slate-300">Score (0-100)</p>
+
+          <div className="mt-3">
+            <p className="text-sm text-slate-200">
+              Delay Risk:{" "}
+              <span className="font-semibold uppercase text-sky-200">
+                {delayRisk?.delayRisk ?? "unknown"}
+              </span>
+            </p>
+          </div>
+
+          <div className="mt-3">
+            <p className="text-sm font-medium text-slate-200">Bottlenecks:</p>
+            <ul className="mt-1 space-y-1 text-sm text-slate-300">
+              {(bottlenecks?.bottlenecks ?? []).slice(0, 3).map((item, idx) => (
+                <li key={`${item}-${idx}`}>• {item}</li>
+              ))}
+              {(!bottlenecks?.bottlenecks || bottlenecks.bottlenecks.length === 0) && (
+                <li>• No bottleneck detected</li>
+              )}
+            </ul>
+          </div>
+        </div>
+
         {modules.map((module) => (
           <Link
             key={module.name}

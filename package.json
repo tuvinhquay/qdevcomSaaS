@@ -12,7 +12,8 @@
     "dev": "npm run sync-assets && next dev --webpack",
     "build": "npm run sync-assets && next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "system:test": "set DOTENV_CONFIG_PATH=.env.local&& tsx src/tests/system_check.ts"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -31,9 +32,13 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
