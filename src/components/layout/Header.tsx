@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/core/auth/AuthProvider";
+import NotificationBell from "@/components/NotificationBell";
 import { auth } from "@/services/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
@@ -32,6 +33,8 @@ export default function Header() {
         <div className="text-sm font-semibold tracking-tight text-slate-100">Q-DevCom SaaS</div>
 
         <div className="flex items-center gap-3">
+          <NotificationBell />
+
           <button
             onClick={handleLogout}
             className="rounded-md border border-white/20 px-3 py-1.5 text-xs font-medium text-slate-100 transition hover:bg-white/10"
