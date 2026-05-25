@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { useAuth } from "@/core/auth/AuthProvider";
+import { runAutomationChecks } from "@/services/automation_engine";
 
 const modules = [
   {
@@ -32,6 +34,13 @@ const modules = [
 
 export default function DashboardPage() {
   const { tenantId, currentUserRole } = useAuth();
+
+  useEffect(() => {
+    if (!tenantId) return;
+    void runAutomationChecks(tenantId).catch((error) => {
+      console.error("runAutomationChecks failed", error);
+    });
+  }, [tenantId]);
 
   return (
     <div className="space-y-5">
